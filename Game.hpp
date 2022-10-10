@@ -37,6 +37,8 @@ struct Player {
 		//throws on malformed controls message
 		bool recv_controls_message(Connection *connection);
 	} controls;
+	uint8_t id;
+	float score = 0.0f;
 
 	//player state (sent from server):
 	glm::vec2 position = glm::vec2(0.0f, 0.0f);
@@ -47,6 +49,9 @@ struct Player {
 };
 
 struct Game {
+	bool is_over = false;
+	uint8_t it_id = 0;
+	uint8_t last_id = 0;
 	std::list< Player > players; //(using list so they can have stable addresses)
 	Player *spawn_player(); //add player the end of the players list (may also, e.g., play some spawn anim)
 	void remove_player(Player *); //remove player from game (may also, e.g., play some despawn anim)

@@ -2,6 +2,7 @@
 
 #include "Connection.hpp"
 
+#include <corecrt_math.h>
 #include <stdexcept>
 #include <iostream>
 #include <cstring>
@@ -94,6 +95,9 @@ Player *Game::spawn_player() {
 
 	player.name = "Player " + std::to_string(next_player_number++);
 
+	player.id = last_id;
+	last_id++;
+
 	return &player;
 }
 
@@ -110,6 +114,9 @@ void Game::remove_player(Player *player) {
 }
 
 void Game::update(float elapsed) {
+	if(is_over){
+		return;
+	}
 	//position/velocity update:
 	for (auto &p : players) {
 		glm::vec2 dir = glm::vec2(0.0f, 0.0f);
@@ -117,6 +124,14 @@ void Game::update(float elapsed) {
 		if (p.controls.right.pressed) dir.x += 1.0f;
 		if (p.controls.down.pressed) dir.y -= 1.0f;
 		if (p.controls.up.pressed) dir.y += 1.0f;
+
+		if(p.id == it_id){
+			p.score += 1.0f * elapsed;
+			if(p.score >= 50.0f){
+				p.score = 50.0f;
+				is_over = true;
+			}
+		}
 
 		if (dir == glm::vec2(0.0f)) {
 			//no inputs: just drift to a stop
@@ -150,6 +165,7 @@ void Game::update(float elapsed) {
 		p.controls.jump.downs = 0;
 	}
 
+	bool didSwapThisFrame = false;
 	//collision resolution:
 	for (auto &p1 : players) {
 		//player/player collisions:
@@ -159,6 +175,14 @@ void Game::update(float elapsed) {
 			float len2 = glm::length2(p12);
 			if (len2 > (2.0f * PlayerRadius) * (2.0f * PlayerRadius)) continue;
 			if (len2 == 0.0f) continue;
+			if(p1.id == it_id && !didSwapThisFrame){
+				it_id = p2.id;
+				didSwapThisFrame = true;
+			}
+			if(p2.id == it_id && !didSwapThisFrame){
+				it_id = p1.id;
+				didSwapThisFrame = true;
+			}
 			glm::vec2 dir = p12 / std::sqrt(len2);
 			//mirror velocity to be in separating direction:
 			glm::vec2 v12 = p2.velocity - p1.velocity;
@@ -205,6 +229,8 @@ void Game::send_state_message(Connection *connection_, Player *connection_player
 		connection.send(player.position);
 		connection.send(player.velocity);
 		connection.send(player.color);
+		connection.send(player.id);
+		connection.send(player.score);
 	
 		//NOTE: can't just 'send(name)' because player.name is not plain-old-data type.
 		//effectively: truncates player name to 255 chars
@@ -212,6 +238,9 @@ void Game::send_state_message(Connection *connection_, Player *connection_player
 		connection.send(len);
 		connection.send_buffer.insert(connection.send_buffer.end(), player.name.begin(), player.name.begin() + len);
 	};
+
+	connection.send(is_over);
+	connection.send(uint8_t(it_id));
 
 	//player count:
 	connection.send(uint8_t(players.size()));
@@ -251,6 +280,9 @@ bool Game::recv_state_message(Connection *connection_) {
 		at += sizeof(*val);
 	};
 
+	read(&is_over);
+	read(&it_id);
+
 	players.clear();
 	uint8_t player_count;
 	read(&player_count);
@@ -260,6 +292,9 @@ bool Game::recv_state_message(Connection *connection_) {
 		read(&player.position);
 		read(&player.velocity);
 		read(&player.color);
+		read(&player.id);
+		read(&player.score);
+
 		uint8_t name_len;
 		read(&name_len);
 		//n.b. would probably be more efficient to directly copy from recv_buffer, but I think this is clearer:
@@ -270,6 +305,7 @@ bool Game::recv_state_message(Connection *connection_) {
 			player.name += c;
 		}
 	}
+
 
 	if (at != size) throw std::runtime_error("Trailing data in state message.");
 

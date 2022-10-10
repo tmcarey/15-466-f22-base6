@@ -10,6 +10,7 @@
 
 #include <random>
 #include <array>
+#include <string>
 
 PlayMode::PlayMode(Client &client_) : client(client_) {
 }
@@ -152,6 +153,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		lines.draw(glm::vec3(Game::ArenaMin.x, Game::ArenaMin.y, 0.0f), glm::vec3(Game::ArenaMin.x, Game::ArenaMax.y, 0.0f), glm::u8vec4(0xff, 0x00, 0xff, 0xff));
 		lines.draw(glm::vec3(Game::ArenaMax.x, Game::ArenaMin.y, 0.0f), glm::vec3(Game::ArenaMax.x, Game::ArenaMax.y, 0.0f), glm::u8vec4(0xff, 0x00, 0xff, 0xff));
 
+		int i = 0;
 		for (auto const &player : game.players) {
 			glm::u8vec4 col = glm::u8vec4(player.color.x*255, player.color.y*255, player.color.z*255, 0xff);
 			if (&player == &game.players.front()) {
@@ -174,8 +176,17 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 					col
 				);
 			}
+			if(player.id == game.it_id){
+				draw_text(player.position + glm::vec2(0.0f, -0.2f + Game::PlayerRadius), "IT", 0.09f);
+			}
 
 			draw_text(player.position + glm::vec2(0.0f, -0.1f + Game::PlayerRadius), player.name, 0.09f);
+			draw_text(glm::vec2(-1.5f, 0.8f - (i * 0.2f)), std::to_string(player.score), 0.09f);
+			i++;
+		}
+
+		if(game.is_over){
+			draw_text(glm::vec2(0, 0), ("GAME OVER"), 0.09f);
 		}
 	}
 	GL_ERRORS();
