@@ -96,6 +96,9 @@ Player *Game::spawn_player() {
 	player.name = "Player " + std::to_string(next_player_number++);
 
 	player.id = last_id;
+	if(players.size() == 1){
+		it_id = player.id;
+	}
 	last_id++;
 
 	return &player;
@@ -105,6 +108,11 @@ void Game::remove_player(Player *player) {
 	bool found = false;
 	for (auto pi = players.begin(); pi != players.end(); ++pi) {
 		if (&*pi == player) {
+			if(player->id == it_id){
+				if(players.size() > 0){
+					it_id = players.begin()->id;	
+				}
+			}
 			players.erase(pi);
 			found = true;
 			break;

@@ -184,9 +184,17 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 			draw_text(glm::vec2(-1.5f, 0.8f - (i * 0.2f)), std::to_string(player.score), 0.09f);
 			i++;
 		}
+		draw_text(glm::vec2(-1.5f, 0.9f), "SCORES:", 0.09f);
+		draw_text(glm::vec2(-1.7f, 0.8f), "YOU:", 0.09f);
 
 		if(game.is_over){
-			draw_text(glm::vec2(0, 0), ("GAME OVER"), 0.09f);
+			Player player;
+			for(auto it = game.players.begin(); it != game.players.end(); it++){
+				if(it->id == game.it_id){
+					player = *it;
+				}
+			}
+			draw_text(glm::vec2(0, 0), player.name + " wins!", 0.09f);
 		}
 	}
 	GL_ERRORS();

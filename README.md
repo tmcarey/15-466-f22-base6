@@ -1,10 +1,10 @@
-# (TODO: your game's title)
+# Tag King
 
-Author: (TODO: your name)
+Author: 
 
-Design: (TODO: In two sentences or fewer, describe what is new and interesting about your game.)
+Design: Reverse Tag - stay "it" for as long as possible to win!
 
-Networking: (TODO: How does your game implement client/server multiplayer? What messages are transmitted? Where in the code?)
+Networking: Send player ids and scores over the network so we can uniquely identify who is it and who has what score. Additionally we reassign who is "it" if "it" leaves.
 
 Screen Shot:
 
@@ -12,9 +12,9 @@ Screen Shot:
 
 How To Play:
 
-(TODO: describe the controls and (if needed) goals/strategy.)
+WASD to move. Touch "it" to get the crown and hold it until you win!
 
-Sources: (TODO: list a source URL for any assets you did not create yourself. Make sure you have a license for the asset.)
+Sources: N/A
 
 This game was built with [NEST](NEST.md).
 
